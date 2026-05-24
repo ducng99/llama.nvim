@@ -1,6 +1,6 @@
 # llama.nvim
 
-Local LLM-assisted text completion for Neovim, powered by [llama.cpp](https://github.com/ggerganov/llama.cpp).
+Local LLM-assisted text completion for Neovim, powered by [llama.cpp](https://github.com/ggml-org/llama.cpp).
 
 No API keys. No cloud. Just your GPU (or CPU) and a model file.
 
@@ -16,7 +16,7 @@ A rewrite combining [llama.vim](https://github.com/ggml-org/llama.vim) and [copi
 ## Requirements
 
 - [Neovim](https://neovim.io/) >= 0.10
-- [llama.cpp](https://github.com/ggerganov/llama.cpp) server running with a FIM-capable model (e.g., CodeLlama, DeepSeek-Coder, Qwen2.5-Coder)
+- [llama.cpp](https://github.com/ggml-org/llama.cpp) server running with a FIM-capable model (e.g., CodeLlama, DeepSeek-Coder, Qwen2.5-Coder)
 - `curl` executable available in your `$PATH`
 
 ## Installation
@@ -25,7 +25,7 @@ A rewrite combining [llama.vim](https://github.com/ggml-org/llama.vim) and [copi
 
 ```lua
 {
-  "yourusername/llama.nvim",
+  "ducng99/llama.nvim",
   config = function()
     require("llama").setup()
   end,
@@ -36,24 +36,11 @@ A rewrite combining [llama.vim](https://github.com/ggml-org/llama.vim) and [copi
 
 ```lua
 use {
-  "yourusername/llama.nvim",
+  "ducng99/llama.nvim",
   config = function()
     require("llama").setup()
   end,
 }
-```
-
-### Manual
-
-```bash
-git clone https://github.com/yourusername/llama.nvim.git \
-  ~/.local/share/nvim/site/pack/llama/start/llama.nvim
-```
-
-Then in your `init.lua`:
-
-```lua
-require("llama").setup()
 ```
 
 ## Quick Start
@@ -140,7 +127,7 @@ Context is built from open buffers, recently yanked text, and the current file. 
 
 ## Acknowledgements
 
-- [llama.vim](https://github.com/ggml-org/llama.vim)
+- [llama.vim](https://github.com/ggml-org/llama.cpp)
 - [copilot.lua](https://github.com/zbirenbaum/copilot.lua)
 
 ## License
