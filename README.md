@@ -15,9 +15,8 @@ A rewrite combining [llama.vim](https://github.com/ggml-org/llama.vim) and [copi
 
 ## Requirements
 
-- [Neovim](https://neovim.io/) >= 0.10
+- [Neovim](https://neovim.io/) >= 0.12
 - [llama.cpp](https://github.com/ggerganov/llama.cpp) server running with a FIM-capable model (e.g., CodeLlama, DeepSeek-Coder, Qwen2.5-Coder)
-- `curl` executable available in your `$PATH`
 
 ## Installation
 

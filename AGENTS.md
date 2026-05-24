@@ -41,7 +41,7 @@ Deprecated config keys are auto-renamed with a warning (see `renames` table in `
 
 ## External Dependencies
 
-- Requires `curl` executable (checked at init)
+- Requires Neovim with `vim.net.request` support (checked at init)
 - Requires a running llama.cpp server with FIM-capable model
 - No package manager, no lockfile, no build step
 

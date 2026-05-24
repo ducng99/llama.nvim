@@ -7,8 +7,7 @@ Requirement
 
 Requires:
 
-- neovim 0.9+
-- curl
+- neovim 0.12+
 - llama.cpp server instance
 - FIM-compatible model
 - Instruct-compatible model
@@ -75,7 +74,7 @@ setup({opts})                                                   *llama.setup()*
 
 init()                                                             *llama.init()*
 
-		Initialize the plugin. Checks for `curl`, sets up commands,
+		Initialize the plugin. Checks for `vim.net.request`, sets up commands,
 		highlights, and enables the plugin if `enable_at_startup` is
 		`true`. Called automatically when the plugin loads.
 

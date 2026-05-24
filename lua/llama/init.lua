@@ -37,8 +37,8 @@ end
 function M.init()
     require('llama.debug').log('llama.vim initializing ...')
 
-    if vim.fn.executable('curl') == 0 then
-        vim.notify('llama.vim requires the "curl" command to be available', vim.log.levels.WARN)
+    if not vim.net or not vim.net.request then
+        vim.notify('llama.vim requires Neovim with vim.net.request support', vim.log.levels.WARN)
         return
     end
 
