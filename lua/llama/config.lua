@@ -66,7 +66,7 @@ end
 
 function M.get()
     if not M.current then
-        M.setup(vim.g.llama_config or {})
+        M.setup({})
     end
     return M.current
 end

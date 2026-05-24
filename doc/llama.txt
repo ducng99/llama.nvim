@@ -60,9 +60,9 @@ Lua API
 
 setup({opts})                                                   *llama.setup()*
 
-		Configure llama.vim with a Lua table. Called automatically by
-		`plugin/llama.lua` at startup using `vim.g.llama_config` if it
-		exists. You can also call it manually in your init.lua:
+	Configure llama.vim with a Lua table. Called automatically by
+	`plugin/llama.lua` at startup. You can also call it manually in your
+	init.lua:
 
 		>lua
 			require('llama').setup({
@@ -133,8 +133,7 @@ value of 256 should be good for all cases.
 ================================================================================
 Configuration										*llama_config*
 
-To customize the behaviour of `llama.vim`, call `require('llama').setup({...})`
-or set `vim.g.llama_config` before the plugin loads.
+To customize the behaviour of `llama.vim`, call `require('llama').setup({...})`.
 
 Currently the default config is:
 >lua

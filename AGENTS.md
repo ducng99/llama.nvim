@@ -12,7 +12,7 @@ Neovim plugin (Lua) providing local LLM-assisted text completion via a llama.cpp
 
 ## Configuration
 
-Config via `require('llama').setup({...})` or `vim.g.llama_config` (set before plugin loads).
+Config via `require('llama').setup({...})`.
 Default endpoints: `http://127.0.0.1:8012/infill` (FIM) and `http://127.0.0.1:8012/v1/chat/completions` (instruct).
 Deprecated config keys are auto-renamed with a warning (see `renames` table in `config.lua`).
 

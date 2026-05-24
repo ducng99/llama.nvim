@@ -1,209 +1,148 @@
-# llama.vim
+# llama.nvim
 
-Local LLM-assisted text completion for Neovim.
+Local LLM-assisted text completion for Neovim, powered by [llama.cpp](https://github.com/ggerganov/llama.cpp).
 
-<img width="485" alt="image" src="https://github.com/user-attachments/assets/a950e38c-3b3f-4c46-94fe-0d6e0f790fc6">
+No API keys. No cloud. Just your GPU (or CPU) and a model file.
 
-#### Fill-in-Middle (FIM) completions
-
-![llama vim-spec-1](https://github.com/user-attachments/assets/404ebc2a-e4b8-4119-999b-e5365ec3208d)
-
-#### Instruction-based editing
-
-https://github.com/user-attachments/assets/641a6e72-f1a2-4fe5-b0fd-c2597c6f4cdc
-
-https://github.com/user-attachments/assets/68bff15b-2d91-4800-985d-b7b110a0ccb7
-
----
+A rewrite combining [llama.vim](https://github.com/ggml-org/llama.vim) and [copilot.lua](https://github.com/zbirenbaum/copilot.lua).
 
 ## Features
 
-- Auto-suggest on cursor movement in `Insert` mode
-- Accept a suggestion with `Tab`
-- Accept the first line of a suggestion with `Shift+Tab`
-- Instruction-based editing with `<leader>lli`
-- Control max text generation time
-- Configure scope of context around the cursor
-- Ring context with chunks from open and edited files and yanked text
-- [Supports very large contexts even on low-end hardware via smart context reuse](https://github.com/ggml-org/llama.cpp/pull/9787)
-- Display performance stats
+- **Fill-in-the-Middle (FIM)** — Inline suggestions as you type, triggered automatically or on demand.
+- **Instruction-based editing** — Select code, describe what you want, and let the model rewrite it.
+- **Fully local** — Runs through your own llama.cpp server. No data leaves your machine.
+- **Zero-config defaults** — Works out of the box with a standard llama.cpp server on `localhost:8012`.
 
 ## Requirements
 
-- Neovim 0.10+
-- `curl`
-- [llama.cpp](https://github.com/ggml-org/llama.cpp) server running with a FIM-compatible model
+- [Neovim](https://neovim.io/) >= 0.10
+- [llama.cpp](https://github.com/ggerganov/llama.cpp) server running with a FIM-capable model (e.g., CodeLlama, DeepSeek-Coder, Qwen2.5-Coder)
+- `curl` executable available in your `$PATH`
 
 ## Installation
 
-### lazy.nvim
+### Using [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
 {
-    'ggml-org/llama.vim',
-    opts = {
-        -- your configuration here
-    },
+  "yourusername/llama.nvim",
+  config = function()
+    require("llama").setup()
+  end,
 }
 ```
 
-### packer.nvim
+### Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
 use {
-    'ggml-org/llama.vim',
-    config = function()
-        require('llama').setup({
-            -- your configuration here
-        })
-    end
+  "yourusername/llama.nvim",
+  config = function()
+    require("llama").setup()
+  end,
 }
 ```
 
-### Plugin configuration
-
-You can customize *llama.vim* by calling `require('llama').setup({...})` or by
-setting `vim.g.llama_config` before the plugin loads.
-
-Examples:
-
-1. Disable the inline info:
-
-    ```lua
-    require('llama').setup({ show_info = 0 })
-    ```
-
-2. Disable auto FIM (Fill-In-the-Middle) completion:
-
-    ```lua
-    {
-        'ggml-org/llama.vim',
-        opts = {
-            auto_fim = false,
-        },
-    }
-    ```
-
-3. Configure FIM keymaps:
-
-    ```lua
-    require('llama').setup({
-        keymap_fim_trigger     = '<leader>llf',
-        keymap_fim_accept_full = '<Tab>',
-        keymap_fim_accept_line = '<S-Tab>',
-        keymap_fim_accept_word = '<leader>ll]',
-    })
-    ```
-
-4. Configure instruction-based editing keymaps:
-
-    ```lua
-    require('llama').setup({
-        keymap_inst_trigger  = '<leader>lli',
-        keymap_inst_rerun    = '<leader>llr',
-        keymap_inst_continue = '<leader>llc',
-        keymap_inst_accept   = '<Tab>',
-        keymap_inst_cancel   = '<Esc>',
-    })
-    ```
-
-5. Force single-line FIM completion:
-
-    ```lua
-    require('llama').setup({
-        n_prefix = 1024,
-        n_suffix = 1024,
-        auto_fim = false,
-        keymap_fim_accept_full = '<C-S>',
-        stop_strings = { '\n' },
-        enable_at_startup = false,
-    })
-    ```
-
-Please refer to `:help llama_config` or the [source](./lua/llama/config.lua)
-for the full list of options.
-
-### llama.cpp setup
-
-The plugin requires a [llama.cpp](https://github.com/ggml-org/llama.cpp) server instance to be running at the configured `endpoint_fim` and/or `endpoint_inst`.
-
-#### Mac OS
+### Manual
 
 ```bash
-brew install llama.cpp
+git clone https://github.com/yourusername/llama.nvim.git \
+  ~/.local/share/nvim/site/pack/llama/start/llama.nvim
 ```
 
-#### Windows
+Then in your `init.lua`:
+
+```lua
+require("llama").setup()
+```
+
+## Quick Start
+
+1. Start your llama.cpp server with a FIM model:
 
 ```bash
-winget install llama.cpp
+./llama-server \
+  -m models/your-fim-model.gguf \
+  --host 127.0.0.1 \
+  --port 8012 \
+  -c 4096
 ```
 
-#### Any other OS
+2. Open Neovim and start typing. FIM suggestions appear automatically (if enabled).
 
-Either build from source or use the latest binaries: https://github.com/ggml-org/llama.cpp/releases
+3. Accept a suggestion with `<Tab>` (default), or cycle through alternatives with `<M-]>` and `<M-[>`.
 
-### llama.cpp settings
+## Configuration
 
-Here are recommended settings, depending on the amount of VRAM that you have:
+```lua
+require("llama").setup({
+  -- Server endpoints
+  endpoint = "http://127.0.0.1:8012/infill",
+  endpoint_chat = "http://127.0.0.1:8012/v1/chat/completions",
 
-- More than 64GB VRAM:
+  -- FIM (auto-suggest) settings
+  n_prefix = 256,           -- Context lines before cursor
+  n_suffix = 64,            -- Context lines after cursor
+  n_predict = 128,          -- Max tokens to generate
+  t_max_prompt_ms = 1000,   -- Max time waiting for first token
+  t_max_predict_ms = 5000,  -- Max generation time
 
-  ```bash
-  llama-server --fim-qwen-30b-default
-  ```
+  -- Visual settings
+  show_virtual_text = true,
+  highlight = "Comment",
 
-- More than 16GB VRAM:
+  -- Keymaps
+  accept_keymap = "<Tab>",
+  dismiss_keymap = "<Esc>",
+  next_keymap = "<M-]>",
+  prev_keymap = "<M-[>",
+})
+```
 
-  ```bash
-  llama-server --fim-qwen-7b-default
-  ```
+## Commands
 
-- Less than 16GB VRAM:
+| Command | Description |
+|---------|-------------|
+| `:LlamaEnable` | Enable FIM auto-suggestions |
+| `:LlamaDisable` | Disable FIM auto-suggestions |
+| `:LlamaToggle` | Toggle FIM on/off |
+| `:LlamaInstruct` | Open instruction-based editing prompt |
+| `:LlamaDebug` | Toggle debug logging |
 
-  ```bash
-  llama-server --fim-qwen-3b-default
-  ```
+## Instruction-Based Editing
 
-- Less than 8GB VRAM:
+1. Visually select a block of code.
+2. Run `:LlamaInstruct` (or your mapped key).
+3. Type your instruction (e.g., "refactor to use list comprehension").
+4. The model generates a diff or replacement.
 
-  ```bash
-  llama-server --fim-qwen-1.5b-default
-  ```
+## How It Works
 
-Use `:help llama` for more details.
+llama.nvim communicates with a local llama.cpp HTTP server using:
 
-### Recommended LLMs
+- `/infill` endpoint for Fill-in-the-Middle predictions
+- `/v1/chat/completions` for instruction-based editing
 
-The plugin requires FIM-compatible models: [HF collection](https://huggingface.co/collections/ggml-org/llamavim-6720fece33898ac10544ecf9)
+Context is built from open buffers, recently yanked text, and the current file. A ring buffer caches chunks for smarter prompts.
 
-## Examples
+## Troubleshooting
 
-<img width="1758" alt="image" src="https://github.com/user-attachments/assets/8f5748b3-183a-4b7f-90e1-9148f0a58883">
+**No suggestions appear?**
 
-### Using `llama.vim` on M1 Pro (2021) with `Qwen2.5-Coder 1.5B Q8_0`:
+- Verify your llama.cpp server is running and accessible: `curl http://127.0.0.1:8012/health`
+- Check that your model supports FIM (look for `<|fim_middle|>` or `<|fim_prefix|>` tokens).
+- Enable debug mode (`:LlamaDebug`) and check `:messages` for request errors.
 
-<img width="1512" alt="image" src="https://github.com/user-attachments/assets/0ccb93c6-c5c5-4376-a5a3-cc99fafc5eef">
+**Slow responses?**
 
-The orange text is the generated suggestion. The green text contains performance stats for the FIM request: the currently used context is `15186` tokens and the maximum is `32768`. There are `30` chunks in the ring buffer with extra context (out of `64`). So far, `1` chunk has been evicted in the current session and there are `0` chunks in queue. The newly computed prompt tokens for this request were `260` and the generated tokens were `24`. It took `1245 ms` to generate this suggestion after entering the letter `c` on the current line.
+- Reduce `n_predict` or `n_prefix` in config.
+- Ensure your server has GPU acceleration enabled (`-ngl` flag).
 
-### Using `llama.vim` on M2 Ultra with `Qwen2.5-Coder 7B Q8_0`:
+## Acknowledgements
 
-https://github.com/user-attachments/assets/1f1eb408-8ac2-4bd2-b2cf-6ab7d6816754
+- [llama.vim](https://github.com/ggml-org/llama.vim)
+- [copilot.lua](https://github.com/zbirenbaum/copilot.lua)
 
-Demonstrates that the global context is accumulated and maintained across different files and showcases the overall latency when working in a large codebase.
+## License
 
-### Another example on a small Swift code
-
-![llama vim-swift](https://github.com/user-attachments/assets/206c8399-ff73-495d-ba67-65725138c021)
-
-## Implementation details
-
-The plugin aims to be very simple and lightweight and at the same time to provide high-quality and performant local FIM completions, even on consumer-grade hardware. Read more on how this is achieved in the following links:
-
-- Initial implementation and technical description: https://github.com/ggml-org/llama.cpp/pull/9787
-- Classic Vim support: https://github.com/ggml-org/llama.cpp/pull/9995
-
-## Other IDEs
-
-- VS Code: https://github.com/ggml-org/llama.vscode
+MIT

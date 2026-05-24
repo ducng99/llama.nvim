@@ -42,11 +42,7 @@ function M.init()
         return
     end
 
-    local opts = {}
-    if vim.g.llama_config then
-        opts = vim.g.llama_config
-    end
-    M.setup(opts)
+    M.setup()
 
     if require('llama.config').get().enable_at_startup then
         M.enable()
