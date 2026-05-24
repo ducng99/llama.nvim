@@ -1,0 +1,8 @@
+llama	llama.txt	/*llama*
+llama_config	llama.txt	/*llama_config*
+llama.disable()	llama.txt	/*llama.disable()*
+llama.enable()	llama.txt	/*llama.enable()*
+llama.init()	llama.txt	/*llama.init()*
+llama.setup()	llama.txt	/*llama.setup()*
+llama.toggle()	llama.txt	/*llama.toggle()*
+llama.toggle_auto_fim()	llama.txt	/*llama.toggle_auto_fim()*

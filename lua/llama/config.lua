@@ -1,0 +1,74 @@
+local M = {}
+
+M.default = {
+    endpoint_fim           = 'http://127.0.0.1:8012/infill',
+    endpoint_inst          = 'http://127.0.0.1:8012/v1/chat/completions',
+    model_fim              = '',
+    model_inst             = '',
+    api_key                = '',
+    n_prefix               = 256,
+    n_suffix               = 64,
+    n_predict              = 128,
+    stop_strings           = {},
+    t_max_prompt_ms        = 500,
+    t_max_predict_ms       = 1000,
+    show_info              = 2,
+    auto_fim               = true,
+    max_line_suffix        = 8,
+    max_cache_keys         = 250,
+    ring_n_chunks          = 16,
+    ring_chunk_size        = 64,
+    ring_scope             = 1024,
+    ring_update_ms         = 1000,
+    keymap_fim_trigger     = '<leader>llf',
+    keymap_fim_accept_full = '<Tab>',
+    keymap_fim_accept_line = '<S-Tab>',
+    keymap_fim_accept_word = '<leader>ll]',
+    keymap_inst_trigger    = '<leader>lli',
+    keymap_inst_rerun      = '<leader>llr',
+    keymap_inst_continue   = '<leader>llc',
+    keymap_inst_accept     = '<Tab>',
+    keymap_inst_cancel     = '<Esc>',
+    keymap_debug_toggle    = '<leader>lld',
+    enable_at_startup      = true,
+    debounce               = 75,
+}
+
+-- Deprecated key renames
+local renames = {
+    endpoint           = 'endpoint_fim',
+    model              = 'model_fim',
+    keymap_trigger     = 'keymap_fim_trigger',
+    keymap_accept_full = 'keymap_fim_accept_full',
+    keymap_accept_line = 'keymap_fim_accept_line',
+    keymap_accept_word = 'keymap_fim_accept_word',
+    keymap_debug       = 'keymap_debug_toggle',
+}
+
+function M.setup(user)
+    user = user or {}
+
+    -- Handle deprecated keys
+    for old_key, new_key in pairs(renames) do
+        if user[old_key] ~= nil then
+            user[new_key] = user[old_key]
+            user[old_key] = nil
+            vim.notify(
+                string.format('llama.vim: %s is deprecated, use %s instead', old_key, new_key),
+                vim.log.levels.WARN
+            )
+        end
+    end
+
+    -- Deep merge (one level is enough for this config)
+    M.current = vim.tbl_deep_extend('force', vim.deepcopy(M.default), user)
+end
+
+function M.get()
+    if not M.current then
+        M.setup(vim.g.llama_config or {})
+    end
+    return M.current
+end
+
+return M
