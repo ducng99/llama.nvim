@@ -341,7 +341,7 @@ function M.fim_on_exit(exit_code, was_killed)
         -- exit code 143 = killed by SIGTERM (15), which is expected when cancelling in-flight jobs
         -- was_killed is set when stop_job is called, covering Windows where killed processes exit with code 1
         if not was_killed and exit_code ~= 0 and exit_code ~= 143 then
-            vim.notify('FIM job failed with exit code: ' .. exit_code, vim.log.levels.ERROR)
+            vim.notify('FIM job failed with exit code: ' .. exit_code, vim.log.levels.WARN)
         end
         local bufnr = vim.api.nvim_get_current_buf()
         local ctx = M.get_ctx(bufnr)
