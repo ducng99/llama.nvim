@@ -310,12 +310,12 @@ function M.fim_on_response(hashes, data)
             return
         end
 
-        if not raw:match('^%s*{') or not raw:match('"content"') then
+        local ok, response = pcall(vim.fn.json_decode, raw)
+        if not ok or not response then
             return
         end
 
-        local ok, response = pcall(vim.fn.json_decode, raw)
-        if not ok or not response then
+        if response.error or type(response.content) ~= 'string' or response.content:match('^%s*$') then
             return
         end
 

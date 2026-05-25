@@ -5,6 +5,7 @@ local function build_curl_command(endpoint, api_key)
         'curl',
         '--silent',
         '--no-buffer',
+        '--fail',
         '--request', 'POST',
         '--url', endpoint,
         '--header', 'Content-Type: application/json',
@@ -49,7 +50,7 @@ function M.send_fim(request, on_response, on_exit)
     local was_killed = false
 
     local function on_exit_callback(result)
-        if on_response and result.stdout and #result.stdout > 0 then
+        if on_response and result.stdout and #result.stdout > 0 and result.code == 0 then
             on_response(nil, split_lines(result.stdout), nil)
         end
         if on_exit then

@@ -213,6 +213,43 @@ describe('llama.fim', function()
         fim.fim_hide(bufnr)
         assert.is_false(fim.is_fim_hint_shown(bufnr))
     end)
+
+    it('fim_on_response rejects error responses', function()
+        local cache = require('llama.cache')
+        local hash = vim.fn.sha256('prefix middle \xce suffix')
+        local hashes = { hash }
+
+        -- Error response without content
+        fim.fim_on_response(hashes, { '{"error": {"message": "test error"}}' })
+        vim.wait(100)
+        assert.is_nil(cache.get(hash))
+
+        -- Response with null content
+        fim.fim_on_response(hashes, { '{"content": null}' })
+        vim.wait(100)
+        assert.is_nil(cache.get(hash))
+
+        -- Response with missing content field
+        fim.fim_on_response(hashes, { '{"timings": {}}' })
+        vim.wait(100)
+        assert.is_nil(cache.get(hash))
+
+        -- Response with whitespace-only content
+        fim.fim_on_response(hashes, { '{"content": " \\n"}' })
+        vim.wait(100)
+        assert.is_nil(cache.get(hash))
+    end)
+
+    it('fim_on_response caches valid responses', function()
+        local cache = require('llama.cache')
+        local hash = vim.fn.sha256('prefix middle \xce suffix')
+        local hashes = { hash }
+
+        fim.fim_on_response(hashes, { '{"content": "hello world"}' })
+        vim.wait(100)
+
+        assert.is_not_nil(cache.get(hash))
+    end)
 end)
 
 describe('llama.suggestion_util', function()
