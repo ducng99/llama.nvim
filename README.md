@@ -63,28 +63,47 @@ use {
 
 ```lua
 require("llama").setup({
-  -- Server endpoints
-  endpoint = "http://127.0.0.1:8012/infill",
-  endpoint_chat = "http://127.0.0.1:8012/v1/chat/completions",
+  -- Server endpoints (defaults shown)
+  endpoint_fim  = "http://127.0.0.1:8012/infill",
+  endpoint_inst = "http://127.0.0.1:8012/v1/chat/completions",
 
-  -- FIM (auto-suggest) settings
-  n_prefix = 256,           -- Context lines before cursor
-  n_suffix = 64,            -- Context lines after cursor
-  n_predict = 128,          -- Max tokens to generate
-  t_max_prompt_ms = 1000,   -- Max time waiting for first token
-  t_max_predict_ms = 5000,  -- Max generation time
+  -- Model names (leave empty if not needed)
+  model_fim  = "",
+  model_inst = "",
 
-  -- Visual settings
-  show_virtual_text = true,
-  highlight = "Comment",
+  -- FIM settings
+  n_prefix    = 256,  -- Context lines before cursor
+  n_suffix    = 64,   -- Context lines after cursor
+  n_predict   = 128,  -- Max tokens to generate
+  stop_strings = {},
+  t_max_prompt_ms   = 500,   -- Max time waiting for first token
+  t_max_predict_ms  = 1000,  -- Max generation time
+  auto_fim     = true,       -- Enable auto-suggestions
+  max_line_suffix = 8,       -- Max lines for suffix context
+  debounce     = 75,         -- Debounce delay (ms)
 
-  -- Keymaps
-  accept_keymap = "<Tab>",
-  dismiss_keymap = "<Esc>",
-  next_keymap = "<M-]>",
-  prev_keymap = "<M-[>",
+  -- Cache and ring buffer settings
+  max_cache_keys = 250,
+  ring_n_chunks   = 16,
+  ring_chunk_size = 64,
+  ring_scope      = 1024,
+  ring_update_ms  = 1000,
+
+  -- Keymaps (assign your own keys - all default to empty string)
+  keymap_fim_trigger     = '<leader>llf',  -- FIM trigger
+  keymap_fim_accept_full = '<Tab>',        -- Accept full suggestion
+  keymap_fim_accept_line = '<S-Tab>',      -- Accept line only
+  keymap_fim_accept_word = '<leader>ll]',  -- Accept word only
+  keymap_inst_trigger    = '<leader>lli',  -- Open instruction editor
+  keymap_inst_rerun      = '<leader>llr',  -- Re-run last instruction
+  keymap_inst_continue   = '<leader>llc',  -- Continue generation
+  keymap_inst_accept     = '<Tab>',        -- Accept instruction output
+  keymap_inst_cancel     = '<Esc>',        -- Cancel instruction
+  keymap_debug_toggle    = '<leader>lld',  -- Toggle debug mode
 })
 ```
+
+
 
 ## Commands
 
