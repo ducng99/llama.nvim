@@ -4,5 +4,10 @@
     "external_directory": {
       "../copilot.lua/**": "allow"
     }
+  },
+  "agent": {
+    "explore": {
+      "model": "opencode-go/minimax-m2.5"
+    }
   }
 }
