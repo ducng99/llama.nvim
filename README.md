@@ -72,6 +72,10 @@ require("llama").setup({
   model_fim  = "",
   model_inst = "",
 
+  -- Extra body fields merged into the instruct request JSON
+  -- e.g. { temperature = 0.1, top_p = 0.95 }
+  inst_extra_body = {},
+
   -- API key (leave empty if not needed)
   api_key = "",
 

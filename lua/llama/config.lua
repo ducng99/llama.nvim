@@ -5,6 +5,7 @@ M.default = {
     endpoint_inst          = 'http://127.0.0.1:8012/v1/chat/completions',
     model_fim              = '',
     model_inst             = '',
+    inst_extra_body        = {},
     api_key                = '',
     n_prefix               = 256,
     n_suffix               = 64,

@@ -76,6 +76,9 @@ function M.send_inst(request, on_response, on_exit)
     if cfg.model_inst and cfg.model_inst ~= '' then
         request.model = cfg.model_inst
     end
+    for k, v in pairs(cfg.inst_extra_body) do
+        request[k] = v
+    end
     local cmd = build_curl_command(cfg.endpoint_inst, cfg.api_key)
     local request_json = vim.fn.json_encode(request)
 
