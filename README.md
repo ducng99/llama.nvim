@@ -11,7 +11,6 @@ A rewrite combining [llama.vim](https://github.com/ggml-org/llama.vim) and [copi
 - **Fill-in-the-Middle (FIM)** — Inline suggestions as you type, triggered automatically or on demand.
 - **Instruction-based editing** — Select code, describe what you want, and let the model rewrite it.
 - **Fully local** — Runs through your own llama.cpp server. No data leaves your machine.
-- **Zero-config defaults** — Works out of the box with a standard llama.cpp server on `localhost:8012`.
 
 ## Requirements
 
@@ -61,9 +60,11 @@ use {
 
 ## Configuration
 
+> For the latest defaults, check [`lua/llama/config.lua`](lua/llama/config.lua) — this README may be out of date.
+
 ```lua
 require("llama").setup({
-  -- Server endpoints (defaults shown)
+  -- Server endpoints
   endpoint_fim  = "http://127.0.0.1:8012/infill",
   endpoint_inst = "http://127.0.0.1:8012/v1/chat/completions",
 
@@ -71,35 +72,42 @@ require("llama").setup({
   model_fim  = "",
   model_inst = "",
 
+  -- API key (leave empty if not needed)
+  api_key = "",
+
   -- FIM settings
-  n_prefix    = 256,  -- Context lines before cursor
-  n_suffix    = 64,   -- Context lines after cursor
-  n_predict   = 128,  -- Max tokens to generate
-  stop_strings = {},
-  t_max_prompt_ms   = 500,   -- Max time waiting for first token
-  t_max_predict_ms  = 1000,  -- Max generation time
-  auto_fim     = true,       -- Enable auto-suggestions
-  max_line_suffix = 8,       -- Max lines for suffix context
-  debounce     = 75,         -- Debounce delay (ms)
+  n_prefix         = 256,   -- Context lines before cursor
+  n_suffix         = 64,    -- Context lines after cursor
+  n_predict        = 128,   -- Max tokens to generate
+  stop_strings     = {},
+  t_max_prompt_ms  = 500,   -- Max time waiting for first token
+  t_max_predict_ms = 1000,  -- Max generation time
+  show_info        = 2,     -- Info display level
+  auto_fim         = true,  -- Enable auto-suggestions
+  max_line_suffix  = 8,     -- Max lines for suffix context
+  debounce         = 75,    -- Debounce delay (ms)
 
   -- Cache and ring buffer settings
-  max_cache_keys = 250,
+  max_cache_keys  = 250,
   ring_n_chunks   = 16,
   ring_chunk_size = 64,
   ring_scope      = 1024,
   ring_update_ms  = 1000,
 
-  -- Keymaps (assign your own keys - all default to empty string)
-  keymap_fim_trigger     = '<leader>llf',  -- FIM trigger
-  keymap_fim_accept_full = '<Tab>',        -- Accept full suggestion
-  keymap_fim_accept_line = '<S-Tab>',      -- Accept line only
-  keymap_fim_accept_word = '<leader>ll]',  -- Accept word only
-  keymap_inst_trigger    = '<leader>lli',  -- Open instruction editor
-  keymap_inst_rerun      = '<leader>llr',  -- Re-run last instruction
-  keymap_inst_continue   = '<leader>llc',  -- Continue generation
-  keymap_inst_accept     = '<Tab>',        -- Accept instruction output
-  keymap_inst_cancel     = '<Esc>',        -- Cancel instruction
-  keymap_debug_toggle    = '<leader>lld',  -- Toggle debug mode
+  -- Keymaps (all default to empty string, assign your own)
+  keymap_fim_trigger     = "",
+  keymap_fim_accept_full = "",
+  keymap_fim_accept_line = "",
+  keymap_fim_accept_word = "",
+  keymap_inst_trigger    = "",
+  keymap_inst_rerun      = "",
+  keymap_inst_continue   = "",
+  keymap_inst_accept     = "",
+  keymap_inst_cancel     = "",
+  keymap_debug_toggle    = "",
+
+  -- Startup
+  enable_at_startup = true,
 })
 ```
 

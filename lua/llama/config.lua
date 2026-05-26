@@ -34,33 +34,9 @@ M.default = {
     debounce               = 75,
 }
 
--- Deprecated key renames
-local renames = {
-    endpoint           = 'endpoint_fim',
-    model              = 'model_fim',
-    keymap_trigger     = 'keymap_fim_trigger',
-    keymap_accept_full = 'keymap_fim_accept_full',
-    keymap_accept_line = 'keymap_fim_accept_line',
-    keymap_accept_word = 'keymap_fim_accept_word',
-    keymap_debug       = 'keymap_debug_toggle',
-}
-
 function M.setup(user)
     user = user or {}
 
-    -- Handle deprecated keys
-    for old_key, new_key in pairs(renames) do
-        if user[old_key] ~= nil then
-            user[new_key] = user[old_key]
-            user[old_key] = nil
-            vim.notify(
-                string.format('llama.vim: %s is deprecated, use %s instead', old_key, new_key),
-                vim.log.levels.WARN
-            )
-        end
-    end
-
-    -- Deep merge (one level is enough for this config)
     M.current = vim.tbl_deep_extend('force', vim.deepcopy(M.default), user)
 end
 
