@@ -2,9 +2,7 @@
 
 Local LLM-assisted text completion for Neovim, powered by [llama.cpp](https://github.com/ggml-org/llama.cpp).
 
-No API keys. No cloud. Just your GPU (or CPU) and a model file.
-
-A rewrite combining [llama.vim](https://github.com/ggml-org/llama.vim) and [copilot.lua](https://github.com/zbirenbaum/copilot.lua).
+A rewrite of [llama.vim](https://github.com/ggml-org/llama.vim) with some from [copilot.lua](https://github.com/zbirenbaum/copilot.lua).
 
 ## Features
 
