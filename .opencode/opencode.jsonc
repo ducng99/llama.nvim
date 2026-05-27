@@ -3,6 +3,10 @@
   "permission": {
     "external_directory": {
       "../copilot.lua/**": "allow"
+    },
+    "bash": {
+      "./tests/run.sh": "allow",
+      "bash tests/run.sh": "allow"
     }
   },
   "agent": {
