@@ -250,6 +250,118 @@ describe('llama.fim', function()
 
         assert.is_not_nil(cache.get(hash))
     end)
+
+    it('fim_accept full with single-line suggestion that overlaps suffix does not duplicate suffix chars', function()
+        -- Buffer: '    return x;', cursor after 'x' (pos_x = 12)
+        -- suffix = ';' (the semicolon after x)
+        -- Model generates ' = 1;' which already ends with ';' (overlap with suffix)
+        -- After fix: content stored = ' = 1;' (overlap removed before appending suffix)
+        --             wait — content[1] should be ' = 1;' (overlap removed: ' = 1' + ';' suffix)
+        -- Acceptance result should be '    return x = 1;' — no duplicate semicolon
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {
+            'function hello() {',
+            '    console.log("hello");',
+            '    return x;',
+            '}',
+        })
+        local ctx = fim.get_ctx(bufnr)
+        ctx.fim_data = {
+            pos_x = 12,
+            pos_y = 3,
+            line_cur = '    return x;',
+            can_accept = true,
+            content = { ' = 1;' },
+        }
+        ctx.hint_shown = true
+
+        fim.fim_accept('full', bufnr)
+
+        wait_for_lines(bufnr, 2, 3, { '    return x = 1;' })
+    end)
+
+    it('fim_accept line with single-line suggestion that overlaps suffix does not duplicate suffix chars', function()
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {
+            '    return x;',
+        })
+        local ctx = fim.get_ctx(bufnr)
+        ctx.fim_data = {
+            pos_x = 12,
+            pos_y = 1,
+            line_cur = '    return x;',
+            can_accept = true,
+            content = { ' = 1;' },
+        }
+        ctx.hint_shown = true
+
+        fim.fim_accept('line', bufnr)
+
+        wait_for_lines(bufnr, 0, 1, { '    return x = 1;' })
+    end)
+
+    it('fim_accept full with multi-line suggestion where last line overlaps suffix does not duplicate suffix chars', function()
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {
+            'function foo() {',
+            '    return x;',
+            '}',
+        })
+        local ctx = fim.get_ctx(bufnr)
+        ctx.fim_data = {
+            pos_x = 12,
+            pos_y = 2,
+            line_cur = '    return x;',
+            can_accept = true,
+            content = { ' = 1', '    return y;' },
+        }
+        ctx.hint_shown = true
+
+        fim.fim_accept('full', bufnr)
+
+        wait_for_lines(bufnr, 1, 4, {
+            '    return x = 1',
+            '    return y;',
+            '}',
+        })
+    end)
+
+    it('fim_accept word with single-line suggestion that overlaps suffix does not duplicate suffix chars', function()
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {
+            '    return x;',
+        })
+        local ctx = fim.get_ctx(bufnr)
+        ctx.fim_data = {
+            pos_x = 12,
+            pos_y = 1,
+            line_cur = '    return x;',
+            can_accept = true,
+            content = { ' value;' },
+        }
+        ctx.hint_shown = true
+
+        fim.fim_accept('word', bufnr)
+
+        wait_for_lines(bufnr, 0, 1, { '    return x value;' })
+    end)
+
+    it('fim_render stores content without duplicate suffix chars for single-line suggestion', function()
+        -- Simulate the relevant parts of fim_render: the model outputs ' = 1;'
+        -- and suffix is ';'. After our fix, content[#content] = remove_common_suffix(';', ' = 1;') .. ';'
+        -- which equals ' = 1' .. ';' = ' = 1;' (overlap removed, no duplicate).
+        local line_cur_suffix = ';'
+        local content = { ' = 1;' }
+        content[#content] = suggestion_util.remove_common_suffix(line_cur_suffix, content[#content]) .. line_cur_suffix
+        -- Verify no duplicate ';;' at the end
+        assert.are.same(' = 1;', content[1])
+        assert.is_nil(content[1]:match(';;$'))
+    end)
+
+    it('fim_render stores content without duplicate suffix chars for multi-line suggestion', function()
+        local line_cur_suffix = ';'
+        local content = { ' = 1', '    return y;' }
+        content[#content] = suggestion_util.remove_common_suffix(line_cur_suffix, content[#content]) .. line_cur_suffix
+        -- Last line should be '    return y;' (overlap removed), no ';;' at end
+        assert.are.same('    return y;', content[#content])
+        assert.is_nil(content[#content]:match(';;$'))
+    end)
 end)
 
 describe('llama.suggestion_util', function()

@@ -475,7 +475,7 @@ function M.fim_render(pos_x, pos_y, raw)
 
     content = suggestion_util.discard_repeating_suggestions(content, line_cur_prefix, line_cur_suffix, pos_y)
 
-    content[#content] = content[#content] .. line_cur_suffix
+    content[#content] = suggestion_util.remove_common_suffix(line_cur_suffix, content[#content]) .. line_cur_suffix
 
     if table.concat(content, '\n'):match('^%s*$') then
         can_accept = false
@@ -484,6 +484,10 @@ function M.fim_render(pos_x, pos_y, raw)
     local display_first_line = content[1]
     if #content == 1 then
         display_first_line = suggestion_util.remove_common_suffix(line_cur_suffix, display_first_line)
+    end
+    local display_last_line = content[#content]
+    if #content > 1 then
+        display_last_line = string.sub(content[#content], 1, #content[#content] - #line_cur_suffix)
     end
 
     local has_multiline = #content > 1 or (display_first_line:find('%c') ~= nil)
@@ -542,8 +546,11 @@ function M.fim_render(pos_x, pos_y, raw)
     vim.api.nvim_buf_set_extmark(bufnr, ns_fim, pos_y - 1, pos_x, extmark_opts)
 
     local virt_lines = {}
-    for i = 2, #content do
+    for i = 2, #content - 1 do
         table.insert(virt_lines, { { content[i], 'llama_hl_fim_hint' } })
+    end
+    if #content > 1 then
+        table.insert(virt_lines, { { display_last_line, 'llama_hl_fim_hint' } })
     end
     if #virt_lines > 0 then
         vim.api.nvim_buf_set_extmark(bufnr, ns_fim, pos_y - 1, 0, {
@@ -619,7 +626,7 @@ function M.fim_accept(accept_type, bufnr)
             if accept_type == 'word' then
                 local first_line_suggestion = content[1]
                 if #content == 1 then
-                    first_line_suggestion = first_line_suggestion:sub(1, #first_line_suggestion - #suffix)
+                    first_line_suggestion = suggestion_util.remove_common_suffix(suffix, first_line_suggestion)
                 end
                 word = first_line_suggestion:match('^%s*%S+')
 
