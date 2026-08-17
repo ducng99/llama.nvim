@@ -1,12 +1,20 @@
 local M = {}
 
 M.default = {
-    endpoint_fim      = 'http://127.0.0.1:8012/infill',
+    endpoint_fim      = 'http://127.0.0.1:8012/completion',
     endpoint_inst     = 'http://127.0.0.1:8012/v1/chat/completions',
     model_fim         = '',
     model_inst        = '',
     inst_extra_body   = {},
     api_key           = '',
+    fim_repo_name     = '',
+    fim_tokens = {
+        prefix   = '<|fim_prefix|>',
+        suffix   = '<|fim_suffix|>',
+        middle   = '<|fim_middle|>',
+        repo     = '<|repo_name|>',
+        file_sep = '<|file_sep|>',
+    },
     n_prefix          = 256,
     n_suffix          = 64,
     n_predict         = 128,

@@ -66,7 +66,7 @@ setup({opts})                                                   *llama.setup()*
 
 		>lua
 			require('llama').setup({
-				endpoint_fim = 'http://127.0.0.1:8012/infill',
+				endpoint_fim = 'http://127.0.0.1:8012/completion',
 				auto_fim = true,
 			})
 		<
@@ -138,7 +138,7 @@ To customize the behaviour of `llama.vim`, call `require('llama').setup({...})`.
 Currently the default config is:
 >lua
 		require('llama').setup({
-			endpoint_fim      = 'http://127.0.0.1:8012/infill',
+			endpoint_fim      = 'http://127.0.0.1:8012/completion',
 			endpoint_inst     = 'http://127.0.0.1:8012/v1/chat/completions',
 			model_fim         = '',
 			model_inst        = '',
@@ -194,6 +194,17 @@ Currently the default config is:
 
 - {model_inst}			model name for instruction completion (optional)
 						recommended: gpt-oss-120b
+
+- {fim_repo_name}		repo name sent with the FIM prompt when using the
+						repo-level pattern (see {fim_tokens})
+
+- {fim_tokens}			tokens used to build the FIM prompt sent to
+						{endpoint_fim} as a single chat message. If
+						{fim_tokens.repo} and {fim_tokens.file_sep} are both
+						non-empty, the repo-level pattern is used (extra
+						context chunks are prefixed with their filename);
+						otherwise extra context is simply prepended to the
+						prompt
 
 - {n_prefix}			number of lines before the cursor location to include
 						in the local prefix

@@ -63,7 +63,7 @@ use {
 ```lua
 require("llama").setup({
   -- Server endpoints
-  endpoint_fim  = "http://127.0.0.1:8012/infill",
+  endpoint_fim  = "http://127.0.0.1:8012/completion",
   endpoint_inst = "http://127.0.0.1:8012/v1/chat/completions",
 
   -- Model names (leave empty if not needed)
@@ -76,6 +76,19 @@ require("llama").setup({
 
   -- API key (leave empty if not needed)
   api_key = "",
+
+  -- Repo name sent with the FIM prompt when the model's FIM tokens support it
+  fim_repo_name = "",
+
+  -- FIM tokens used to build the prompt sent to /v1/chat/completions.
+  -- Set `repo`/`file_sep` to "" to disable the repo-level pattern.
+  fim_tokens = {
+    prefix   = "<|fim_prefix|>",
+    suffix   = "<|fim_suffix|>",
+    middle   = "<|fim_middle|>",
+    repo     = "<|repo_name|>",
+    file_sep = "<|file_sep|>",
+  },
 
   -- FIM settings
   n_prefix         = 256,   -- Context lines before cursor
@@ -148,7 +161,7 @@ require("llama").setup({
 
 llama.nvim communicates with a local llama.cpp HTTP server using:
 
-- `/infill` endpoint for Fill-in-the-Middle predictions
+- `/completion` endpoint for Fill-in-the-Middle predictions
 - `/v1/chat/completions` for instruction-based editing
 
 Context is built from open buffers, recently yanked text, and the current file. A ring buffer caches chunks for smarter prompts.

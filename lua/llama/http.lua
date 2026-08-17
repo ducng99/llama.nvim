@@ -39,19 +39,43 @@ local function split_lines(str)
     return lines
 end
 
+local function to_chat_request(request)
+    local chat_request = vim.deepcopy(request)
+    chat_request.messages = { { role = 'user', content = chat_request.prompt } }
+    chat_request.prompt = nil
+    return chat_request
+end
+
+local function normalize_chat_response(raw)
+    local ok, response = pcall(vim.fn.json_decode, raw)
+    if not ok or not response then
+        return raw
+    end
+
+    local content = ''
+    if response.choices and response.choices[1] and response.choices[1].message then
+        content = response.choices[1].message.content or ''
+    end
+    response.content = content
+    response.choices = nil
+
+    return vim.fn.json_encode(response)
+end
+
 function M.send_fim(request, on_response, on_exit)
     local cfg = require('llama.config').get()
+    local chat_request = to_chat_request(request)
     if cfg.model_fim and cfg.model_fim ~= '' then
-        request.model = cfg.model_fim
+        chat_request.model = cfg.model_fim
     end
     local cmd = build_curl_command(cfg.endpoint_fim, cfg.api_key)
-    local request_json = vim.fn.json_encode(request)
+    local request_json = vim.fn.json_encode(chat_request)
 
     local was_killed = false
 
     local function on_exit_callback(result)
         if on_response and result.stdout and #result.stdout > 0 and result.code == 0 then
-            on_response(nil, split_lines(result.stdout), nil)
+            on_response(nil, split_lines(normalize_chat_response(result.stdout)), nil)
         end
         if on_exit then
             on_exit(nil, result.code, was_killed)
@@ -126,11 +150,12 @@ end
 
 function M.send_noop(request)
     local cfg = require('llama.config').get()
+    local chat_request = to_chat_request(request)
     if cfg.model_fim and cfg.model_fim ~= '' then
-        request.model = cfg.model_fim
+        chat_request.model = cfg.model_fim
     end
     local cmd = build_curl_command(cfg.endpoint_fim, cfg.api_key)
-    local request_json = vim.fn.json_encode(request)
+    local request_json = vim.fn.json_encode(chat_request)
 
     vim.system(cmd, {
         stdin = request_json,

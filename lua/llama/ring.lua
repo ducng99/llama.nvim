@@ -170,10 +170,7 @@ function M.update()
     local extra = M.get_extra()
     local request = {
         id_slot = 0,
-        input_prefix = '',
-        input_suffix = '',
-        input_extra = extra,
-        prompt = '',
+        prompt = require('llama.fim').build_fim_prompt('', '', '', extra),
         n_predict = 0,
         temperature = 0.0,
         samplers = {},

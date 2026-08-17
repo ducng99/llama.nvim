@@ -115,6 +115,31 @@ function M.fim_ctx_local(pos_x, pos_y, prev)
     }
 end
 
+function M.build_fim_prompt(prefix, middle, suffix, extra)
+    local cfg = require('llama.config').get()
+    local tokens = cfg.fim_tokens
+
+    local head = ''
+    if tokens.repo ~= '' and tokens.file_sep ~= '' then
+        local parts = { tokens.repo .. cfg.fim_repo_name }
+        for _, chunk in ipairs(extra) do
+            table.insert(parts, tokens.file_sep .. chunk.filename)
+            table.insert(parts, chunk.text)
+        end
+        local cur_filename = vim.api.nvim_buf_get_name(0)
+        table.insert(parts, tokens.file_sep .. cur_filename)
+        head = table.concat(parts, '\n') .. '\n'
+    else
+        local parts = {}
+        for _, chunk in ipairs(extra) do
+            table.insert(parts, chunk.text)
+        end
+        head = table.concat(parts, '')
+    end
+
+    return head .. tokens.prefix .. prefix .. tokens.suffix .. suffix .. tokens.middle .. middle
+end
+
 local function cancel_inflight_job(ctx)
     if ctx.current_job then
         require('llama.http').stop_job(ctx.current_job)
@@ -245,16 +270,13 @@ function M.do_fim(pos_x, pos_y, is_auto, prev, use_cache)
 
     local request = {
         id_slot = 0,
-        input_prefix = prefix,
-        input_suffix = suffix,
-        input_extra = extra,
-        prompt = middle,
+        prompt = M.build_fim_prompt(prefix, middle, suffix, extra),
         n_predict = cfg.n_predict,
         stop = cfg.stop_strings,
         n_indent = indent,
         top_k = 40,
         top_p = 0.90,
-        samplers = { 'top_k', 'top_p', 'infill' },
+        samplers = { 'top_k', 'top_p' },
         stream = false,
         cache_prompt = true,
         t_max_prompt_ms = cfg.t_max_prompt_ms,
