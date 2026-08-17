@@ -137,6 +137,10 @@ function M.build_fim_prompt(prefix, middle, suffix, extra)
         head = table.concat(parts, '')
     end
 
+    if cfg.fim_format == 'prefix_middle_suffix' then
+        return head .. tokens.start .. prefix .. tokens.middle .. suffix .. tokens.close .. middle
+    end
+
     return head .. tokens.prefix .. prefix .. tokens.suffix .. suffix .. tokens.middle .. middle
 end
 

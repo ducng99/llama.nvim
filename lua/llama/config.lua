@@ -8,12 +8,15 @@ M.default = {
     inst_extra_body   = {},
     api_key           = '',
     fim_repo_name     = '',
+    fim_format        = 'prefix_suffix_middle', -- or 'prefix_middle_suffix'
     fim_tokens = {
         prefix   = '<|fim_prefix|>',
         suffix   = '<|fim_suffix|>',
         middle   = '<|fim_middle|>',
         repo     = '<|repo_name|>',
         file_sep = '<|file_sep|>',
+        start    = '<|fim_start|>',
+        close    = '<|fim_end|>',
     },
     n_prefix          = 256,
     n_suffix          = 64,
