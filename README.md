@@ -97,16 +97,28 @@ require("llama").setup({
   ring_update_ms  = 1000,
 
   -- Keymaps (all default to empty string, assign your own)
-  keymap_fim_trigger     = "",
-  keymap_fim_accept_full = "",
-  keymap_fim_accept_line = "",
-  keymap_fim_accept_word = "",
-  keymap_inst_trigger    = "",
-  keymap_inst_rerun      = "",
-  keymap_inst_continue   = "",
-  keymap_inst_accept     = "",
-  keymap_inst_cancel     = "",
-  keymap_debug_toggle    = "",
+  keymaps = {
+    fim_trigger     = "",
+    fim_accept_full = "",
+    fim_accept_line = "",
+    fim_accept_word = "",
+    inst_trigger    = "",
+    inst_rerun      = "",
+    inst_continue   = "",
+    inst_accept     = "",
+    inst_cancel     = "",
+    debug_toggle    = "",
+  },
+
+  -- Highlight groups (fg/bg/cterm* accepted, see `:h nvim_set_hl`)
+  theme = {
+    llama_hl_fim_hint        = { fg = "#ff772f", ctermfg = 202 },
+    llama_hl_fim_info        = { fg = "#77ff2f", ctermfg = 119 },
+    llama_hl_inst_src        = { bg = "#554433", ctermbg = 236 },
+    llama_hl_inst_virt_proc  = { fg = "#77ff2f", ctermfg = 119 },
+    llama_hl_inst_virt_gen   = { fg = "#77ff2f", ctermfg = 119 },
+    llama_hl_inst_virt_ready = { fg = "#ff772f", ctermfg = 202 },
+  },
 
   -- Startup
   enable_at_startup = true,

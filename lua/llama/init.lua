@@ -8,12 +8,9 @@ function M.setup(opts)
 
     local cfg = require('llama.config').get()
 
-    vim.api.nvim_set_hl(0, 'llama_hl_fim_hint', { fg = '#ff772f', ctermfg = 202, default = true })
-    vim.api.nvim_set_hl(0, 'llama_hl_fim_info', { fg = '#77ff2f', ctermfg = 119, default = true })
-    vim.api.nvim_set_hl(0, 'llama_hl_inst_src', { bg = '#554433', ctermbg = 236, default = true })
-    vim.api.nvim_set_hl(0, 'llama_hl_inst_virt_proc', { fg = '#77ff2f', ctermfg = 119, default = true })
-    vim.api.nvim_set_hl(0, 'llama_hl_inst_virt_gen', { fg = '#77ff2f', ctermfg = 119, default = true })
-    vim.api.nvim_set_hl(0, 'llama_hl_inst_virt_ready', { fg = '#ff772f', ctermfg = 202, default = true })
+    for hl_group, hl_opts in pairs(cfg.theme) do
+        vim.api.nvim_set_hl(0, hl_group, hl_opts)
+    end
 
     vim.api.nvim_create_user_command('LlamaEnable', function()
         M.enable()
@@ -187,47 +184,33 @@ function M.enable()
     local cfg = require('llama.config').get()
     local keymaps_mod = require('llama.keymaps')
 
-    if cfg.keymap_fim_trigger ~= '' then
-        keymaps_mod.register_keymap_with_passthrough('i', cfg.keymap_fim_trigger, function()
-            return require('llama.fim').fim_inline(false, false)
-        end, '[llama] trigger suggestion', 0)
-    end
+    keymaps_mod.register_keymap_with_passthrough('i', cfg.keymaps.fim_trigger, function()
+        return require('llama.fim').fim_inline(false, false)
+    end, '[llama] trigger suggestion', 0)
 
-    if cfg.keymap_debug_toggle ~= '' then
-        vim.keymap.set('n', cfg.keymap_debug_toggle, function()
-            require('llama.debug').toggle()
-        end, { silent = true })
-    end
+    keymaps_mod.set('n', cfg.keymaps.debug_toggle, function()
+        require('llama.debug').toggle()
+    end, { silent = true })
 
-    if cfg.keymap_inst_trigger ~= '' then
-        vim.keymap.set('v', cfg.keymap_inst_trigger, function()
-            vim.cmd('LlamaInstruct')
-        end, { silent = true })
-    end
+    keymaps_mod.set('v', cfg.keymaps.inst_trigger, function()
+        vim.cmd('LlamaInstruct')
+    end, { silent = true })
 
-    if cfg.keymap_inst_rerun ~= '' then
-        vim.keymap.set('n', cfg.keymap_inst_rerun, function()
-            require('llama.instruct').inst_rerun()
-        end, { silent = true })
-    end
+    keymaps_mod.set('n', cfg.keymaps.inst_rerun, function()
+        require('llama.instruct').inst_rerun()
+    end, { silent = true })
 
-    if cfg.keymap_inst_continue ~= '' then
-        vim.keymap.set('n', cfg.keymap_inst_continue, function()
-            require('llama.instruct').inst_continue()
-        end, { silent = true })
-    end
+    keymaps_mod.set('n', cfg.keymaps.inst_continue, function()
+        require('llama.instruct').inst_continue()
+    end, { silent = true })
 
-    if cfg.keymap_inst_accept ~= '' then
-        vim.keymap.set('n', cfg.keymap_inst_accept, function()
-            require('llama.instruct').inst_accept()
-        end, { silent = true })
-    end
+    keymaps_mod.set('n', cfg.keymaps.inst_accept, function()
+        require('llama.instruct').inst_accept()
+    end, { silent = true })
 
-    if cfg.keymap_inst_cancel ~= '' then
-        vim.keymap.set('n', cfg.keymap_inst_cancel, function()
-            require('llama.instruct').inst_cancel()
-        end, { silent = true })
-    end
+    keymaps_mod.set('n', cfg.keymaps.inst_cancel, function()
+        require('llama.instruct').inst_cancel()
+    end, { silent = true })
 
     M.setup_autocmds()
 
@@ -250,27 +233,13 @@ function M.disable()
     local cfg = require('llama.config').get()
     local keymaps_mod = require('llama.keymaps')
 
-    if cfg.keymap_fim_trigger ~= '' then
-        keymaps_mod.unset_keymap_if_exists('i', cfg.keymap_fim_trigger, 0)
-    end
-    if cfg.keymap_debug_toggle ~= '' then
-        pcall(vim.keymap.del, 'n', cfg.keymap_debug_toggle)
-    end
-    if cfg.keymap_inst_trigger ~= '' then
-        pcall(vim.keymap.del, 'v', cfg.keymap_inst_trigger)
-    end
-    if cfg.keymap_inst_rerun ~= '' then
-        pcall(vim.keymap.del, 'n', cfg.keymap_inst_rerun)
-    end
-    if cfg.keymap_inst_continue ~= '' then
-        pcall(vim.keymap.del, 'n', cfg.keymap_inst_continue)
-    end
-    if cfg.keymap_inst_accept ~= '' then
-        pcall(vim.keymap.del, 'n', cfg.keymap_inst_accept)
-    end
-    if cfg.keymap_inst_cancel ~= '' then
-        pcall(vim.keymap.del, 'n', cfg.keymap_inst_cancel)
-    end
+    keymaps_mod.unset_keymap_if_exists('i', cfg.keymaps.fim_trigger, 0)
+    keymaps_mod.del('n', cfg.keymaps.debug_toggle)
+    keymaps_mod.del('v', cfg.keymaps.inst_trigger)
+    keymaps_mod.del('n', cfg.keymaps.inst_rerun)
+    keymaps_mod.del('n', cfg.keymaps.inst_continue)
+    keymaps_mod.del('n', cfg.keymaps.inst_accept)
+    keymaps_mod.del('n', cfg.keymaps.inst_cancel)
 
     enabled = false
     require('llama.debug').log('plugin disabled')

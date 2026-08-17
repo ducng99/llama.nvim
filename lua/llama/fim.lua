@@ -582,21 +582,15 @@ function M.setup_accept_keymaps(bufnr)
         return false
     end
 
-    if cfg.keymap_fim_accept_full ~= '' then
-        keymaps.register_keymap_with_passthrough('i', cfg.keymap_fim_accept_full, function()
-            return accept_action('full')
-        end, '[llama] accept suggestion (full)', bufnr)
-    end
-    if cfg.keymap_fim_accept_line ~= '' then
-        keymaps.register_keymap_with_passthrough('i', cfg.keymap_fim_accept_line, function()
-            return accept_action('line')
-        end, '[llama] accept suggestion (line)', bufnr)
-    end
-    if cfg.keymap_fim_accept_word ~= '' then
-        keymaps.register_keymap_with_passthrough('i', cfg.keymap_fim_accept_word, function()
-            return accept_action('word')
-        end, '[llama] accept suggestion (word)', bufnr)
-    end
+    keymaps.register_keymap_with_passthrough('i', cfg.keymaps.fim_accept_full, function()
+        return accept_action('full')
+    end, '[llama] accept suggestion (full)', bufnr)
+    keymaps.register_keymap_with_passthrough('i', cfg.keymaps.fim_accept_line, function()
+        return accept_action('line')
+    end, '[llama] accept suggestion (line)', bufnr)
+    keymaps.register_keymap_with_passthrough('i', cfg.keymaps.fim_accept_word, function()
+        return accept_action('word')
+    end, '[llama] accept suggestion (word)', bufnr)
 end
 
 function M.fim_accept(accept_type, bufnr)

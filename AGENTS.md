@@ -1,4 +1,4 @@
-# AGENTS.md — llama.vim
+# AGENTS.md
 
 ## Project
 
@@ -7,7 +7,7 @@ Neovim plugin (Lua) providing local LLM-assisted text completion via a llama.cpp
 ## Entry Points
 
 - `plugin/llama.lua` — autoload entry, calls `require('llama').init()`
-- `lua/llama/init.lua` — main module (`setup`, `enable`, `disable`, `toggle`)
+- `lua/llama/init.lua` — main module (`setup`, `enable`, `disable`, `toggle`); owns autocmd registration (`setup_autocmds`) and keymap registration/teardown on enable/disable
 - `lua/llama/config.lua` — defaults and user config merge
 
 ## Configuration
@@ -34,8 +34,9 @@ Deprecated config keys are auto-renamed with a warning (see `renames` table in `
 ## Tests
 
 - Framework: plenary.nvim `busted` runner
-- Run: `bash tests/run.sh`
-- Prerequisite: `.deps/plenary.nvim` must be present (gitignored, clone manually)
+- Run all: `bash tests/run.sh`
+- Run a single spec file: `bash tests/run.sh -c "PlenaryBustedFile tests/integration/fim_spec.lua"` (or invoke `nvim --headless -u tests/minimal_init.lua -c "PlenaryBustedFile tests/integration/<name>_spec.lua"` directly)
+- Prerequisite: `.deps/plenary.nvim` must be present (gitignored, clone manually into `.deps/plenary.nvim`)
 - Spec files: `tests/integration/*_spec.lua`
 - `tests/minimal_init.lua` sets up runtimepath for headless runs
 
@@ -49,4 +50,3 @@ Deprecated config keys are auto-renamed with a warning (see `renames` table in `
 
 - No linter, formatter, or typecheck config in repo — follow existing Lua style
 - No CI workflows
-- `opencode.json` allows `../copilot.lua/**` for cross-repo work
