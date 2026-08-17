@@ -138,36 +138,48 @@ To customize the behaviour of `llama.vim`, call `require('llama').setup({...})`.
 Currently the default config is:
 >lua
 		require('llama').setup({
-			endpoint_fim           = 'http://127.0.0.1:8012/infill',
-			endpoint_inst          = 'http://127.0.0.1:8012/v1/chat/completions',
-			model_fim              = '',
-			model_inst             = '',
-			api_key                = '',
-			n_prefix               = 256,
-			n_suffix               = 64,
-			n_predict              = 128,
-			stop_strings           = {},
-			t_max_prompt_ms        = 500,
-			t_max_predict_ms       = 1000,
-			show_info              = 2,
-			auto_fim               = true,
-			max_line_suffix        = 8,
-			max_cache_keys         = 250,
-			ring_n_chunks          = 16,
-			ring_chunk_size        = 64,
-			ring_scope             = 1024,
-			ring_update_ms         = 1000,
-			keymap_fim_trigger     = '<leader>llf',
-			keymap_fim_accept_full = '<Tab>',
-			keymap_fim_accept_line = '<S-Tab>',
-			keymap_fim_accept_word = '<leader>ll]',
-			keymap_inst_trigger    = '<leader>lli',
-			keymap_inst_rerun      = '<leader>llr',
-			keymap_inst_continue   = '<leader>llc',
-			keymap_inst_accept     = '<Tab>',
-			keymap_inst_cancel     = '<Esc>',
-			keymap_debug_toggle    = '<leader>lld',
-			enable_at_startup      = true,
+			endpoint_fim      = 'http://127.0.0.1:8012/infill',
+			endpoint_inst     = 'http://127.0.0.1:8012/v1/chat/completions',
+			model_fim         = '',
+			model_inst        = '',
+			api_key           = '',
+			n_prefix          = 256,
+			n_suffix          = 64,
+			n_predict         = 128,
+			stop_strings      = {},
+			t_max_prompt_ms   = 500,
+			t_max_predict_ms  = 1000,
+			show_info         = 2,
+			auto_fim          = true,
+			max_line_suffix   = 8,
+			max_cache_keys    = 250,
+			ring_n_chunks     = 16,
+			ring_chunk_size   = 64,
+			ring_scope        = 1024,
+			ring_update_ms    = 1000,
+			enable_at_startup = true,
+
+			keymaps = {
+				fim_trigger     = '<leader>llf',
+				fim_accept_full = '<Tab>',
+				fim_accept_line = '<S-Tab>',
+				fim_accept_word = '<leader>ll]',
+				inst_trigger    = '<leader>lli',
+				inst_rerun      = '<leader>llr',
+				inst_continue   = '<leader>llc',
+				inst_accept     = '<Tab>',
+				inst_cancel     = '<Esc>',
+				debug_toggle    = '<leader>lld',
+			},
+
+			theme = {
+				llama_hl_fim_hint        = { fg = '#ff772f', ctermfg = 202 },
+				llama_hl_fim_info        = { fg = '#77ff2f', ctermfg = 119 },
+				llama_hl_inst_src        = { bg = '#554433', ctermbg = 236 },
+				llama_hl_inst_virt_proc  = { fg = '#77ff2f', ctermfg = 119 },
+				llama_hl_inst_virt_gen   = { fg = '#77ff2f', ctermfg = 119 },
+				llama_hl_inst_virt_ready = { fg = '#ff772f', ctermfg = 202 },
+			},
 		})
 <
 
@@ -228,19 +240,36 @@ parameters for the ring-buffer with extra context:
 
 - {ring_update_ms}		how often to process queued chunks in normal mode
 
-keymaps parameters:
+{keymaps} parameters:
 
-- {keymap_fim_trigger}		keymap to trigger the auto completion, default: <leader>llf
+- {keymaps.fim_trigger}		keymap to trigger the auto completion, default: <leader>llf
 
-- {keymap_fim_accept_full}	keymap to accept full suggestion, default: <Tab>
+- {keymaps.fim_accept_full}	keymap to accept full suggestion, default: <Tab>
 
-- {keymap_fim_accept_line}	keymap to accept line suggestion, default: <S-Tab>
+- {keymaps.fim_accept_line}	keymap to accept line suggestion, default: <S-Tab>
 
-- {keymap_fim_accept_word}	keymap to accept word suggestion, default: <leader>ll]
+- {keymaps.fim_accept_word}	keymap to accept word suggestion, default: <leader>ll]
 
-- {keymap_inst_trigger}		keymap to trigger instruction-based editing, default: <leader>lli
+- {keymaps.inst_trigger}		keymap to trigger instruction-based editing, default: <leader>lli
 
-- {keymap_debug_toggle}		keymap to toggle the debug pane, default: <leader>lld
+- {keymaps.debug_toggle}		keymap to toggle the debug pane, default: <leader>lld
+
+{theme} parameters:
+
+- {theme.llama_hl_fim_hint}		highlight for the FIM ghost-text hint
+
+- {theme.llama_hl_fim_info}		highlight for the inline info text
+
+- {theme.llama_hl_inst_src}		highlight for the instruction source range
+
+- {theme.llama_hl_inst_virt_proc}	highlight for the "processing" virtual text
+
+- {theme.llama_hl_inst_virt_gen}	highlight for the "generating" virtual text
+
+- {theme.llama_hl_inst_virt_ready}	highlight for the "ready" virtual text
+
+Each {theme} entry is a table accepted by |nvim_set_hl()| (e.g. `fg`, `bg`,
+`ctermfg`, `ctermbg`).
 
 Example:
 
@@ -262,10 +291,12 @@ Example:
 3. Configure FIM keymaps:
 >lua
 		require('llama').setup({
-			keymap_fim_trigger     = '<leader>llf',
-			keymap_fim_accept_full = '<Tab>',
-			keymap_fim_accept_line = '<S-Tab>',
-			keymap_fim_accept_word = '<leader>ll]',
+			keymaps = {
+				fim_trigger     = '<leader>llf',
+				fim_accept_full = '<Tab>',
+				fim_accept_line = '<S-Tab>',
+				fim_accept_word = '<leader>ll]',
+			},
 		})
 <
 
@@ -275,21 +306,22 @@ Example:
 			n_prefix = 1024,
 			n_suffix = 1024,
 			auto_fim = false,
-			keymap_fim_accept_full = '<C-S>',
+			keymaps = {
+				fim_accept_full = '<C-S>',
+			},
 			stop_strings = { '\n' },
 			enable_at_startup = false,
 		})
 <
 
-To adjust the colors for hint and info texts, `llama.vim` provides the
-highlight group `llama_hl_fim_hint` and `llama_hl_fim_info`. You can modify these
-groups using the normal way.
-
-Example:
-
+5. Adjust the colors for the hint and info texts:
 >lua
-		vim.api.nvim_set_hl(0, 'llama_hl_fim_hint', { fg = '#f8732e', ctermfg = 209 })
-		vim.api.nvim_set_hl(0, 'llama_hl_fim_info', { fg = '#50fa7b', ctermfg = 119 })
+		require('llama').setup({
+			theme = {
+				llama_hl_fim_hint = { fg = '#f8732e', ctermfg = 209 },
+				llama_hl_fim_info = { fg = '#50fa7b', ctermfg = 119 },
+			},
+		})
 <
 
 ================================================================================

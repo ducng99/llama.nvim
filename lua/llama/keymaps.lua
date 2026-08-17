@@ -8,8 +8,24 @@ local function get_keymap_key(bufnr, mode, key)
     return bufnr .. ':' .. mode .. ':' .. key
 end
 
+function M.set(mode, key, callback, opts)
+    if not key or key == '' then
+        return
+    end
+
+    vim.keymap.set(mode, key, callback, opts)
+end
+
+function M.del(mode, key)
+    if not key or key == '' then
+        return
+    end
+
+    pcall(vim.keymap.del, mode, key)
+end
+
 function M.register_keymap(mode, key, action, desc, bufnr)
-    if not key then
+    if not key or key == '' then
         return
     end
 
@@ -49,7 +65,7 @@ local function save_existing_keymap(mode, key, keymap_key, bufnr)
 end
 
 function M.register_keymap_with_passthrough(mode, key, action, desc, bufnr)
-    if not key then
+    if not key or key == '' then
         return
     end
 
@@ -92,7 +108,7 @@ function M.register_keymap_with_passthrough(mode, key, action, desc, bufnr)
 end
 
 function M.unset_keymap_if_exists(mode, key, bufnr)
-    if not key or not bufnr then
+    if not key or key == '' or not bufnr then
         return
     end
 
