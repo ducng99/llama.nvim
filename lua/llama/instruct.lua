@@ -120,15 +120,22 @@ function M.inst_send(req_id, messages)
         return m.content
     end, messages), '\n'))
 
+    local cfg = require('llama.config').get()
+    local inst_cfg = cfg.inst_config or {}
+
     local request = {
         id_slot = req_id,
         messages = messages,
-        min_p = 0.1,
-        temperature = 0.1,
-        samplers = { 'min_p', 'temperature' },
         stream = true,
         cache_prompt = true,
     }
+
+    if inst_cfg.temperature ~= nil then request.temperature = inst_cfg.temperature end
+    if inst_cfg.top_k ~= nil then request.top_k = inst_cfg.top_k end
+    if inst_cfg.top_p ~= nil then request.top_p = inst_cfg.top_p end
+    if inst_cfg.min_p ~= nil then request.min_p = inst_cfg.min_p end
+
+    request.samplers = { 'min_p', 'temperature' }
 
     local req = M.inst_reqs[req_id]
 

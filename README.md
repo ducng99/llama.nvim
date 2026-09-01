@@ -74,6 +74,18 @@ require("llama").setup({
   -- e.g. { temperature = 0.1, top_p = 0.95 }
   inst_extra_body = {},
 
+  -- Sampler fields merged into the instruct request JSON
+  -- Supported keys: temperature, top_k, top_p, min_p
+  -- Keys not set here are omitted from the request entirely
+  -- (the server uses its own defaults for those).
+  inst_config = {},
+
+  -- Sampler fields merged into the FIM request JSON
+  -- Supported keys: temperature, top_k, top_p, min_p
+  -- Keys not set here are omitted from the request entirely
+  -- (the server uses its own defaults for those).
+  fim_config = {},
+
   -- API key (leave empty if not needed)
   api_key = "",
 

@@ -243,6 +243,8 @@ function M.do_fim(pos_x, pos_y, is_auto, prev, use_cache)
 
     local extra = require('llama.ring').get_extra()
 
+    local fim_cfg = cfg.fim_config or {}
+
     local request = {
         id_slot = 0,
         input_prefix = prefix,
@@ -252,9 +254,6 @@ function M.do_fim(pos_x, pos_y, is_auto, prev, use_cache)
         n_predict = cfg.n_predict,
         stop = cfg.stop_strings,
         n_indent = indent,
-        top_k = 40,
-        top_p = 0.90,
-        samplers = { 'top_k', 'top_p', 'infill' },
         stream = false,
         cache_prompt = true,
         t_max_prompt_ms = cfg.t_max_prompt_ms,
@@ -273,6 +272,13 @@ function M.do_fim(pos_x, pos_y, is_auto, prev, use_cache)
             'tokens_cached',
         },
     }
+
+    if fim_cfg.temperature ~= nil then request.temperature = fim_cfg.temperature end
+    if fim_cfg.top_k ~= nil then request.top_k = fim_cfg.top_k end
+    if fim_cfg.top_p ~= nil then request.top_p = fim_cfg.top_p end
+    if fim_cfg.min_p ~= nil then request.min_p = fim_cfg.min_p end
+
+    request.samplers = { 'top_k', 'top_p', 'infill' }
 
     if ctx.current_job then
         require('llama.http').stop_job(ctx.current_job)

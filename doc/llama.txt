@@ -142,6 +142,7 @@ Currently the default config is:
 			endpoint_inst     = 'http://127.0.0.1:8012/v1/chat/completions',
 			model_fim         = '',
 			model_inst        = '',
+			inst_config       = {},
 			api_key           = '',
 			n_prefix          = 256,
 			n_suffix          = 64,
@@ -152,6 +153,7 @@ Currently the default config is:
 			show_info         = 2,
 			auto_fim          = true,
 			max_line_suffix   = 8,
+			fim_config        = {},
 			max_cache_keys    = 250,
 			ring_n_chunks     = 16,
 			ring_chunk_size   = 64,
@@ -195,6 +197,16 @@ Currently the default config is:
 - {model_inst}			model name for instruction completion (optional)
 						recommended: gpt-oss-120b
 
+- {inst_config}		table of sampler fields merged into the
+						instruct request JSON. Supported keys:
+						temperature, top_k, top_p, min_p.
+						Keys not set here are omitted from the request
+						entirely (the server uses its own defaults).
+						Example:
+						>lua
+							inst_config = { temperature = 0.1, top_p = 0.95 }
+						<
+
 - {n_prefix}			number of lines before the cursor location to include
 						in the local prefix
 
@@ -219,6 +231,16 @@ Currently the default config is:
 - {max_line_suffix}		do not auto-trigger FIM completion if there are
 						more than this number of characters to the right
 						of the cursor
+
+- {fim_config}			table of sampler fields merged into the FIM
+						request JSON. Supported keys: temperature,
+						top_k, top_p, min_p. Keys not set
+						here are omitted from the request entirely
+						(the server uses its own defaults).
+						Example:
+						>lua
+							fim_config = { temperature = 0.2, top_k = 20 }
+						<
 
 - {max_cache_keys}		max number of cached completions to keep in result_cache
 
