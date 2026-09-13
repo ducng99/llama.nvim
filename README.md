@@ -74,17 +74,26 @@ require("llama").setup({
   -- e.g. { temperature = 0.1, top_p = 0.95 }
   inst_extra_body = {},
 
-  -- Sampler fields merged into the instruct request JSON
-  -- Supported keys: temperature, top_k, top_p, min_p
-  -- Keys not set here are omitted from the request entirely
-  -- (the server uses its own defaults for those).
-  inst_config = {},
+  -- Extra body fields merged into the FIM request JSON
+  -- e.g. { temperature = 0.2, top_k = 20 }
+  fim_extra_body = {},
 
-  -- Sampler fields merged into the FIM request JSON
-  -- Supported keys: temperature, top_k, top_p, min_p
-  -- Keys not set here are omitted from the request entirely
-  -- (the server uses its own defaults for those).
-  fim_config = {},
+  -- FIM configuration
+  -- mode: "infill" (default) or "completion"
+  -- format: "psm" | "pms" | "spm" (default: "psm") — token order in completion mode
+  -- prefix/suffix/middle: FIM tokens (default to ChatML-style tokens)
+  -- completion mode builds repo_name/file_sep headers from the current file
+  -- and the filenames of the ring chunks, mirroring the server's /infill
+
+  fim_config = {
+    prefix    = '<|fim_prefix|>',
+    suffix    = '<|fim_suffix|>',
+    middle    = '<|fim_middle|>',
+    repo_name = '<repo_name>',
+    file_sep  = '<file_sep>',
+    mode      = 'infill',
+    format    = 'psm',
+  },
 
   -- API key (leave empty if not needed)
   api_key = "",

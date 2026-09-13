@@ -425,4 +425,108 @@ describe('llama.suggestion_util', function()
         )
         assert.are.same({ ' unique' }, content)
     end)
+
+    describe('build_completion_prompt', function()
+        local fim_cfg = {
+            prefix = '<PRE>', suffix = '<SUF>', middle = '<MID>',
+            repo_name = '<REPO>', file_sep = '<SEP>', format = 'psm',
+        }
+
+        it('builds repo header and relative file names from extra chunks', function()
+            local extra = {
+                { text = 'chunk A\n', filename = '/home/u/proj/src/a.lua' },
+                { text = 'chunk B\n', filename = '/home/u/proj/lib/b.lua' },
+            }
+            local prompt = fim.build_completion_prompt(fim_cfg, 'pre', 'mid', 'suf', extra, '/home/u/proj/src/c.lua')
+            assert.are.same(
+                '<REPO>proj\n<SEP>src/a.lua\nchunk A\n<SEP>lib/b.lua\nchunk B\n<SEP>src/c.lua\n<PRE>pre<SUF>suf<MID>mid',
+                prompt
+            )
+        end)
+
+        it('falls back to base names when paths share no directory', function()
+            local extra = { { text = 'x\n', filename = '/other/place/x.lua' } }
+            local prompt = fim.build_completion_prompt(fim_cfg, '', '', '', extra, '/somewhere/else/main.lua')
+            assert.are.same('<SEP>x.lua\nx\n<SEP>main.lua\n<PRE><SUF><MID>', prompt)
+        end)
+
+        it('uses base name when the current file sits directly in the repo dir', function()
+            local prompt = fim.build_completion_prompt(fim_cfg, 'p', 'm', 's', {}, '/home/u/proj/main.lua')
+            assert.are.same('<REPO>proj\n<SEP>main.lua\n<PRE>p<SUF>s<MID>m', prompt)
+        end)
+
+        it('omits repo token when no file name is available', function()
+            local prompt = fim.build_completion_prompt(fim_cfg, 'p', 'm', 's', {}, '')
+            assert.are.same('<SEP><PRE>p<SUF>s<MID>m', prompt)
+        end)
+
+        it('handles extra chunks without file names', function()
+            local extra = { { text = 'scratch\n', filename = '' } }
+            local prompt = fim.build_completion_prompt(fim_cfg, '', '', '', extra, '/home/u/proj/main.lua')
+            assert.are.same('<REPO>proj\n<SEP>scratch\n<SEP>main.lua\n<PRE><SUF><MID>', prompt)
+        end)
+
+        it('respects pms and spm formats', function()
+            local pms = vim.tbl_extend('force', fim_cfg, { format = 'pms' })
+            assert.are.same(
+                '<REPO>proj\n<SEP>main.lua\n<PRE>p<MID>m<SUF>s',
+                fim.build_completion_prompt(pms, 'p', 'm', 's', {}, '/w/proj/main.lua')
+            )
+            local spm = vim.tbl_extend('force', fim_cfg, { format = 'spm' })
+            assert.are.same(
+                '<REPO>proj\n<SEP>main.lua\n<SUF>s<PRE>p<MID>m',
+                fim.build_completion_prompt(spm, 'p', 'm', 's', {}, '/w/proj/main.lua')
+            )
+        end)
+    end)
+
+    describe('do_fim completion mode', function()
+        local captured
+
+        before_each(function()
+            require('llama.config').setup({ fim_config = { mode = 'completion' } })
+            captured = {}
+            package.loaded['llama.ring'] = {
+                get_extra = function()
+                    return { { text = 'extra body\n', filename = '/tmp/llama_test_proj/lib/util.lua' } }
+                end,
+                evict_similar_to_current = function() end,
+                get_pos_y_pick = function() return 0 end,
+                pick_chunk = function() end,
+                set_pos_y_pick = function() end,
+            }
+            package.loaded['llama.http'] = {
+                send_fim = function(request)
+                    captured.request = request
+                    return 'job'
+                end,
+                stop_job = function() end,
+            }
+        end)
+
+        after_each(function()
+            package.loaded['llama.ring'] = nil
+            package.loaded['llama.http'] = nil
+            require('llama.config').setup({})
+        end)
+
+        it('sends prompt with repo/file names from ring extra', function()
+            local buf = vim.api.nvim_create_buf(false, true)
+            vim.api.nvim_buf_set_name(buf, '/tmp/llama_test_proj/src/main.lua')
+            vim.api.nvim_buf_set_lines(buf, 0, -1, false, { 'local a = 1', 'local b = ' })
+            vim.api.nvim_set_current_buf(buf)
+
+            fim.do_fim(9, 2, false, {}, false)
+
+            assert.are.same(
+                '<|repo_name|>llama_test_proj\n'
+                    .. '<|file_sep|>lib/util.lua\nextra body\n'
+                    .. '<|file_sep|>src/main.lua\n'
+                    .. '<|fim_prefix|>local a = 1\n<|fim_suffix|> \n<|fim_middle|>local b =',
+                captured.request.prompt
+            )
+
+            vim.api.nvim_buf_delete(buf, { force = true })
+        end)
+    end)
 end)

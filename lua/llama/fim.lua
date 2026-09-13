@@ -115,6 +115,121 @@ function M.fim_ctx_local(pos_x, pos_y, prev)
     }
 end
 
+-- Split a path into its components.
+local function split_path(path)
+    local parts = {}
+    for part in path:gmatch('[^/]+') do
+        table.insert(parts, part)
+    end
+    return parts
+end
+
+-- Directory components of a file path (file name dropped).
+local function dir_parts(fname)
+    local parts = split_path(fname)
+    table.remove(parts)
+    return parts
+end
+
+-- Longest directory-component prefix shared by all given lists of dir components.
+local function common_dir_prefix(dirs)
+    if #dirs == 0 then
+        return {}
+    end
+    local first = dirs[1]
+    for i = 1, #first do
+        local part = first[i]
+        for j = 2, #dirs do
+            if dirs[j][i] ~= part then
+                if i == 1 then
+                    return {}
+                end
+                local prefix = {}
+                for k = 1, i - 1 do
+                    table.insert(prefix, first[k])
+                end
+                return prefix
+            end
+        end
+    end
+    return first
+end
+
+-- Render a file name relative to the common repo directory when possible,
+-- falling back to its base name.
+local function rel_file_name(fname, common)
+    local parts = split_path(fname)
+    if #common > 0 and #parts > #common then
+        local rel = {}
+        for i = #common + 1, #parts do
+            table.insert(rel, parts[i])
+        end
+        return table.concat(rel, '/')
+    end
+    return parts[#parts] or ''
+end
+
+-- Build the FIM prompt for the /completion endpoint. Mirrors the repo-level
+-- pattern used by the llama.cpp server for /infill (format_prompt_infill):
+--
+--   <|repo_name|>myproject
+--   <|file_sep|>file0.lua
+--   extra chunk 0
+--   <|file_sep|>cur.lua
+--   <|fim_prefix|>prefix<|fim_suffix|>suffix<|fim_middle|>middle
+--
+-- The repo name is the innermost directory shared by the current file and the
+-- ring chunks; file names are rendered relative to it.
+function M.build_completion_prompt(fim_cfg, prefix, middle, suffix, extra, fname_cur)
+    local fim_prefix = fim_cfg.prefix or '<|fim_prefix|>'
+    local fim_suffix = fim_cfg.suffix or '<|fim_suffix|>'
+    local fim_middle = fim_cfg.middle or '<|fim_middle|>'
+    local fim_repo = fim_cfg.repo_name or '<|repo_name|>'
+    local fim_sep = fim_cfg.file_sep or '<|file_sep|>'
+
+    local dirs = {}
+    if fname_cur ~= '' then
+        table.insert(dirs, dir_parts(fname_cur))
+    end
+    for _, chunk in ipairs(extra) do
+        if chunk.filename and chunk.filename ~= '' then
+            table.insert(dirs, dir_parts(chunk.filename))
+        end
+    end
+
+    local common = common_dir_prefix(dirs)
+    local prompt = {}
+
+    if #common > 0 then
+        table.insert(prompt, fim_repo .. common[#common] .. '\n')
+    end
+
+    local function file_sep(fname)
+        local name = rel_file_name(fname, common)
+        if name == '' then
+            return fim_sep
+        end
+        return fim_sep .. name .. '\n'
+    end
+
+    for _, chunk in ipairs(extra) do
+        table.insert(prompt, file_sep(chunk.filename or ''))
+        table.insert(prompt, chunk.text)
+    end
+
+    table.insert(prompt, file_sep(fname_cur))
+
+    if fim_cfg.format == 'psm' then
+        table.insert(prompt, fim_prefix .. prefix .. fim_suffix .. suffix .. fim_middle .. middle)
+    elseif fim_cfg.format == 'pms' then
+        table.insert(prompt, fim_prefix .. prefix .. fim_middle .. middle .. fim_suffix .. suffix)
+    else -- spm
+        table.insert(prompt, fim_suffix .. suffix .. fim_prefix .. prefix .. fim_middle .. middle)
+    end
+
+    return table.concat(prompt, '')
+end
+
 local function cancel_inflight_job(ctx)
     if ctx.current_job then
         require('llama.http').stop_job(ctx.current_job)
@@ -243,14 +358,12 @@ function M.do_fim(pos_x, pos_y, is_auto, prev, use_cache)
 
     local extra = require('llama.ring').get_extra()
 
+    local fim_extra = cfg.fim_extra_body or {}
     local fim_cfg = cfg.fim_config or {}
+    local fim_mode = fim_cfg.mode or 'infill'
 
     local request = {
         id_slot = 0,
-        input_prefix = prefix,
-        input_suffix = suffix,
-        input_extra = extra,
-        prompt = middle,
         n_predict = cfg.n_predict,
         stop = cfg.stop_strings,
         n_indent = indent,
@@ -273,10 +386,23 @@ function M.do_fim(pos_x, pos_y, is_auto, prev, use_cache)
         },
     }
 
-    if fim_cfg.temperature ~= nil then request.temperature = fim_cfg.temperature end
-    if fim_cfg.top_k ~= nil then request.top_k = fim_cfg.top_k end
-    if fim_cfg.top_p ~= nil then request.top_p = fim_cfg.top_p end
-    if fim_cfg.min_p ~= nil then request.min_p = fim_cfg.min_p end
+    if fim_mode == 'completion' then
+        -- Craft prompt manually using format, with repo and file names built
+        -- from the ring extra chunks and the current buffer
+        local name_raw = vim.api.nvim_buf_get_name(bufnr)
+        local fname_cur = name_raw ~= '' and vim.fn.fnamemodify(name_raw, ':p') or ''
+        request.prompt = M.build_completion_prompt(fim_cfg, prefix, middle, suffix, extra, fname_cur)
+    else
+        -- Normal infill mode: use input_* fields
+        request.input_prefix = prefix
+        request.input_suffix = suffix
+        request.input_extra = extra
+        request.prompt = middle
+    end
+
+    for k, v in pairs(fim_extra) do
+        request[k] = v
+    end
 
     request.samplers = { 'top_k', 'top_p', 'infill' }
 

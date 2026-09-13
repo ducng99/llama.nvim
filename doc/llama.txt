@@ -142,7 +142,7 @@ Currently the default config is:
 			endpoint_inst     = 'http://127.0.0.1:8012/v1/chat/completions',
 			model_fim         = '',
 			model_inst        = '',
-			inst_config       = {},
+			inst_extra_body   = {},
 			api_key           = '',
 			n_prefix          = 256,
 			n_suffix          = 64,
@@ -153,7 +153,16 @@ Currently the default config is:
 			show_info         = 2,
 			auto_fim          = true,
 			max_line_suffix   = 8,
-			fim_config        = {},
+			fim_extra_body    = {},
+			fim_config        = {
+				prefix    = '<|fim_prefix|>',
+				suffix    = '<|fim_suffix|>',
+				middle    = '<|fim_middle|>',
+				repo_name = '<|repo_name|>',
+				file_sep  = '<|file_sep|>',
+				mode      = 'infill',
+				format    = 'psm',
+			},
 			max_cache_keys    = 250,
 			ring_n_chunks     = 16,
 			ring_chunk_size   = 64,
@@ -197,14 +206,12 @@ Currently the default config is:
 - {model_inst}			model name for instruction completion (optional)
 						recommended: gpt-oss-120b
 
-- {inst_config}		table of sampler fields merged into the
-						instruct request JSON. Supported keys:
-						temperature, top_k, top_p, min_p.
-						Keys not set here are omitted from the request
-						entirely (the server uses its own defaults).
+- {inst_extra_body}	table of extra fields merged into the
+						instruct request JSON. Any key-value pair is
+						passed through to the server.
 						Example:
 						>lua
-							inst_config = { temperature = 0.1, top_p = 0.95 }
+							inst_extra_body = { temperature = 0.1, top_p = 0.95 }
 						<
 
 - {n_prefix}			number of lines before the cursor location to include
@@ -232,14 +239,41 @@ Currently the default config is:
 						more than this number of characters to the right
 						of the cursor
 
-- {fim_config}			table of sampler fields merged into the FIM
-						request JSON. Supported keys: temperature,
-						top_k, top_p, min_p. Keys not set
-						here are omitted from the request entirely
-						(the server uses its own defaults).
+- {fim_extra_body}	table of extra fields merged into the FIM
+						request JSON. Any key-value pair is passed
+						through to the server.
 						Example:
 						>lua
-							fim_config = { temperature = 0.2, top_k = 20 }
+							fim_extra_body = { temperature = 0.2, top_k = 20 }
+						<
+
+- {fim_config}		FIM configuration table with the following keys:
+						{fim_config.prefix}	FIM prefix token (default: '<|fim_prefix|>')
+						{fim_config.suffix}	FIM suffix token (default: '<|fim_suffix|>')
+						{fim_config.middle}	FIM middle token (default: '<|fim_middle|>')
+						{fim_config.repo_name}	repo name token (default: '<repo_name>')
+						{fim_config.file_sep}	file separator token (default: '<file_sep>')
+						{fim_config.mode}	'infill' (default) or 'completion'
+						{fim_config.format}	'psm' (default), 'pms', or 'spm'
+						In 'completion' mode, the prompt is crafted
+						manually using format to order prefix, suffix,
+						and middle tokens, prepended with repo_name
+						and file_sep headers built from the current
+						file and the filenames of the ring chunks
+						(mirroring the server's /infill formatting).
+						In 'infill' mode (default),
+						the server's native FIM endpoint is used.
+						Example:
+						>lua
+							fim_config = {
+								prefix    = '<|fim_prefix|>',
+								suffix    = '<|fim_suffix|>',
+								middle    = '<|fim_middle|>',
+								repo_name = '<|repo_name|>',
+								file_sep  = '<|file_sep|>',
+								mode      = 'completion',
+								format    = 'psm',
+							}
 						<
 
 - {max_cache_keys}		max number of cached completions to keep in result_cache
